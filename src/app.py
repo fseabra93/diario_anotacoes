@@ -100,15 +100,22 @@ if not conectado:
         st.markdown(f"""
         **Detalhes do erro:** `{msg_conexao}`
         
-        Para conectar a aplicação ao seu banco de dados:
-        1. Abra o arquivo [`.env`](file:///{Path(__file__).resolve().parent.parent / '.env'}) na raiz do projeto.
-        2. Obtenha a **URI de Conexão** no seu painel Supabase:
-           - Acesse: **Project Settings** ➔ **Database** ➔ **Connection string** ➔ **URI**.
-        3. Cole sua connection string no `.env`:
-           ```env
-           DATABASE_URL=postgresql://postgres:[SUA_SENHA]@db.[SEU_PROJETO].supabase.co:5432/postgres
-           ```
-        4. Clique no botão abaixo para testar novamente.
+        ### ☁️ Se você está no Streamlit Community Cloud:
+        1. No painel do seu app no Streamlit Cloud, clique no menu **Settings** ➔ **Secrets** (ou nos `...` do app).
+        2. Cole a variável exatamente assim:
+        ```toml
+        DATABASE_URL = "postgresql://postgres:[SUA_SENHA]@db.[SEU_PROJETO].supabase.co:5432/postgres"
+        ```
+        3. Clique em **Save**. O app recarregará automaticamente e se conectará ao Supabase!
+        
+        ---
+        ### 💻 Se você está rodando localmente (localhost):
+        1. Abra o arquivo `.env` na raiz do projeto.
+        2. Configure sua connection string:
+        ```env
+        DATABASE_URL=postgresql://postgres:[SUA_SENHA]@db.[SEU_PROJETO].supabase.co:5432/postgres
+        ```
+        3. Clique no botão abaixo para testar novamente.
         """)
 
         if st.button("🔄 Testar Conexão Novamente", type="primary"):

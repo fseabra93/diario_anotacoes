@@ -23,12 +23,28 @@ DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 
 def get_db_url() -> str:
-    """Retorna a URL de conexão configurada ou dispara exceção se ausente."""
-    url = os.getenv("DATABASE_URL", "").strip()
+    """Retorna a URL de conexão configurada ou dispara exceção se ausente.
+    Suporta st.secrets (Streamlit Cloud) e variáveis de ambiente/dotenv (local).
+    """
+    url = ""
+    # 1. Tenta obter de st.secrets (Streamlit Community Cloud)
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and "DATABASE_URL" in st.secrets:
+            url = str(st.secrets["DATABASE_URL"]).strip()
+    except Exception:
+        pass
+
+    # 2. Tenta obter do ambiente / .env
+    if not url:
+        url = os.getenv("DATABASE_URL", "").strip()
+
+    # 3. Valida se a URL é válida e não é apenas um placeholder
     if not url or "SUA_SENHA_AQUI" in url:
         raise ValueError(
             "DATABASE_URL não configurada ou contém placeholders. "
-            "Edite o arquivo .env na raiz do projeto com a connection string do Supabase."
+            "No Streamlit Cloud: vá em 'Settings' -> 'Secrets' e adicione DATABASE_URL. "
+            "Localmente: edite o arquivo .env na raiz do projeto."
         )
     return url
 
