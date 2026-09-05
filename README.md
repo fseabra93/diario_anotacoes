@@ -195,3 +195,32 @@ O navegador abrirá automaticamente no endereço:
    - **Backup Completo em JSON:** Baixe um arquivo estruturado com metadados e todos os relacionamentos N:N preservados.
    - **Planilhas em CSV:** Baixe tabelas individuais ou o arquivo consolidado de conversas com assuntos e tags concatenados.
    - **Schema DDL:** Baixe o arquivo SQL completo para reconstruir o banco em qualquer servidor PostgreSQL.
+  
+
+
+
+----------------------------------------------------------------------------------
+
+Como resolver no Streamlit Cloud em 3 passos:
+No Streamlit Cloud, as variáveis sensíveis são configuradas de forma segura e criptografada através da aba Secrets.
+
+Abra as configurações do seu App:
+
+Acesse o painel do seu app no share.streamlit.io
+.
+No canto inferior direito da tela do app, clique em Manage app (ou no menu de três pontinhos ... ➔ Settings).
+Acesse a aba Secrets:
+
+No menu lateral esquerdo da janela de configurações, clique em Secrets.
+Cole a sua URL de Conexão:
+
+Cole a sua chave no formato TOML (com aspas):
+toml
+
+
+DATABASE_URL = "postgresql://postgres:SUA_SENHA@db.SEU_PROJETO.supabase.co:5432/postgres"
+(Substitua pela sua senha e host reais do Supabase).
+
+Clique em Save:
+
+O Streamlit Cloud salvará a senha de forma criptografada e reiniciará o aplicativo automaticamente.
