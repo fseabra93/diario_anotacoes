@@ -5,7 +5,9 @@ gerenciamento transacional de conversas e exportações independentes (JSON/CSV)
 """
 
 from datetime import date, datetime, time
+import hmac
 import io
+import os
 from pathlib import Path
 import sys
 from typing import List
@@ -87,6 +89,72 @@ if "pagina_ativa" not in st.session_state:
 
 
 # ==============================================================================
+# AUTENTICAÇÃO POR SENHA (PROTEÇÃO DE ACESSO)
+# ==============================================================================
+def obter_senha_configurada() -> str:
+    """Obtém a senha cadastrada em st.secrets (nuvem) ou .env (local)."""
+    try:
+        if hasattr(st, "secrets") and "APP_PASSWORD" in st.secrets:
+            return str(st.secrets["APP_PASSWORD"]).strip()
+    except Exception:
+        pass
+    return os.getenv("APP_PASSWORD", "").strip()
+
+
+def verificar_autenticacao():
+    """Exige senha a cada nova sessão ou conexão para proteger os dados."""
+    if "autenticado" not in st.session_state:
+        st.session_state.autenticado = False
+
+    if st.session_state.autenticado:
+        return True
+
+    # Interface Centralizada de Login
+    _, col_login, _ = st.columns([1, 2, 1])
+    with col_login:
+        st.write("")
+        st.write("")
+        with st.container(border=True):
+            st.markdown("<h2 style='text-align: center;'>🔒 Diário de Anotações</h2>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align: center; color: #7f8c8d;'>Acesso Restrito e Pessoal</p>", unsafe_allow_html=True)
+            st.write("---")
+
+            senha_mestra = obter_senha_configurada()
+
+            if not senha_mestra:
+                st.warning(
+                    "⚠️ **Variável APP_PASSWORD não configurada!**\n\n"
+                    "Defina sua senha de acesso:\n"
+                    "- **No Streamlit Cloud:** Vá em **Settings** ➔ **Secrets** e adicione:\n"
+                    "  `APP_PASSWORD = \"sua_senha_aqui\"`\n"
+                    "- **Localmente (.env):** Adicione `APP_PASSWORD=sua_senha_aqui` no arquivo `.env`."
+                )
+
+            with st.form("form_autenticacao", clear_on_submit=False):
+                senha_digitada = st.text_input(
+                    "Digite sua senha de acesso:",
+                    type="password",
+                    placeholder="Sua senha secreta...",
+                )
+                btn_entrar = st.form_submit_button("🔓 Entrar no Diário", type="primary", use_container_width=True)
+
+                if btn_entrar:
+                    if not senha_mestra:
+                        st.error("Configure a variável APP_PASSWORD antes de acessar.")
+                    elif hmac.compare_digest(senha_digitada.strip(), senha_mestra):
+                        st.session_state.autenticado = True
+                        st.success("Autenticação realizada com sucesso!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Senha incorreta! Tente novamente.")
+
+    st.stop()
+
+
+# Bloqueia a execução se não estiver autenticado
+verificar_autenticacao()
+
+# ==============================================================================
 # VERIFICAÇÃO DE CONEXÃO COM O BANCO DE DADOS
 # ==============================================================================
 conectado, msg_conexao = db.testar_conexao()
@@ -150,6 +218,10 @@ with st.sidebar:
 
     st.divider()
     st.success("🟢 Conectado ao Supabase")
+    st.caption("🔒 Sessão Autenticada")
+    if st.button("🚪 Sair (Logout)", use_container_width=True):
+        st.session_state.autenticado = False
+        st.rerun()
 
 
 # ==============================================================================
